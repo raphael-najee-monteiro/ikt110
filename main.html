@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Distance Estimator (with ML parameters)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    label {
+      font-weight: bold;
+      font-size: 0.9rem;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+    input {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+    }
+    button {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      font-weight: bold;
+      color: white;
+      background: #2563eb;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #1e40af;
+    }
+    .result {
+      text-align: center;
+      margin-top: 1rem;
+    }
+    .result p {
+      margin: 0.25rem 0;
+    }
+    .result span {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #2563eb;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Distance Estimator</h1>
+
+    <!-- Forward-step method -->
+    <label for="s1">initial apparent size [cm]</label>
+    <input type="number" id="s1" placeholder="Enter s1">
+
+    <label for="s2">apparent size after step [cm]</label>
+    <input type="number" id="s2" placeholder="Enter s2">
+
+    <label for="d">forward step size in meters [m]</label>
+    <input type="number" id="d" placeholder="Enter d">
+
+    <!-- Parallax method -->
+    <label for="angle">Parallax angle [degree°]</label>
+    <input type="number" id="angle" placeholder="Enter angle">
+
+    <button onclick="calculateDistance()">Calculate Distance</button>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    // Fixed ML parameters (example values — replace with your trained ones)
+    const a0 = 0.0;
+    const a1 = 1.0;
+    const a2 = 1.0;
+
+    function calculateDistance() {
+      const s1 = parseFloat(document.getElementById('s1').value);
+      const s2 = parseFloat(document.getElementById('s2').value);
+      const d = parseFloat(document.getElementById('d').value);
+      const angle = parseFloat(document.getElementById('angle').value);
+
+      const resultDiv = document.getElementById('result');
+
+      // Feature x1: forward-step ratio
+      let x1 = NaN;
+      if (s1 > 0 && s2 > 0 && d > 0 && s2 > s1) {
+        x1 = (1 - s1/s2) / d;
+      }
+
+      // Feature x2: parallax angle
+      let x2 = isNaN(angle) ? NaN : angle;
+
+      if (!isNaN(x1) || !isNaN(x2)) {
+        // ML formula: y = a0 + a1*x1 + a2*x2
+        const y = a0 + (isNaN(x1) ? 0 : a1 * x1) + (isNaN(x2) ? 0 : a2 * x2);
+
+        if (y > 0) {
+          const Z = 1 / y;
+          resultDiv.innerHTML = `
+            <p>Estimated Distance:</p>
+            <span>${Z.toFixed(2)} m</span>
+          `;
+        } else {
+          resultDiv.innerHTML = `<p style="color:red;">Invalid parameters (y ≤ 0).</p>`;
+        }
+      } else {
+        resultDiv.innerHTML = `<p style="color:red;">Provide valid inputs.</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
