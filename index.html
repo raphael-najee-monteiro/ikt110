@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Distance Estimator (with ML parameters)</title>
+  <title>Distance Estimator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -41,6 +41,15 @@
       border-radius: 0.5rem;
       font-size: 1rem;
     }
+    .method-select {
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .method-select label {
+      font-weight: normal;
+      display: inline-block;
+      margin-right: 1rem;
+    }
     button {
       width: 100%;
       padding: 0.75rem;
@@ -67,25 +76,41 @@
       font-weight: bold;
       color: #2563eb;
     }
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div class="card">
     <h1>Distance Estimator</h1>
 
+    <div class="method-select">
+      <label><input type="radio" name="method" value="forward" checked onchange="toggleInputs()"> Forward step</label>
+      <label><input type="radio" name="method" value="parallax" onchange="toggleInputs()"> Parallax</label>
+      <label><input type="radio" name="method" value="both" onchange="toggleInputs()"> Combine both</label>
+    </div>
+
     <!-- Forward-step method -->
-    <label for="s1">initial apparent size [cm]</label>
-    <input type="number" id="s1" placeholder="Enter size">
+    <div id="forwardInputs">
+      <label for="s1">initial apparent size [cm]</label>
+      <input type="number" id="s1" placeholder="Enter size">
 
-    <label for="s2">apparent size after step [cm]</label>
-    <input type="number" id="s2" placeholder="Enter size">
+      <label for="s2">apparent size after step [cm]</label>
+      <input type="number" id="s2" placeholder="Enter size">
 
-    <label for="d">forward step distance [m]</label>
-    <input type="number" id="d" placeholder="Enter distance">
+      <label for="d">forward step distance [m]</label>
+      <input type="number" id="d" placeholder="Enter distance">
+    </div>
 
     <!-- Parallax method -->
-    <label for="angle">Parallax angle [degree°]</label>
-    <input type="number" id="angle" placeholder="Enter angle">
+    <div id="parallaxInputs" class="hidden">
+      <label for="angle">parallax angle [degree°]</label>
+      <input type="number" id="angle" placeholder="Enter angle">
+
+      <label for="side">side distance [m]</label>
+      <input type="number" id="side" placeholder="Enter distance">
+    </div>
 
     <button onclick="calculateDistance()">Calculate Distance</button>
 
@@ -98,11 +123,19 @@
     const a1 = 1.0;
     const a2 = 1.0;
 
+    function toggleInputs() {
+      const method = document.querySelector('input[name="method"]:checked').value;
+      document.getElementById('forwardInputs').classList.toggle('hidden', method === "parallax");
+      document.getElementById('parallaxInputs').classList.toggle('hidden', method === "forward");
+    }
+
     function calculateDistance() {
+      const method = document.querySelector('input[name="method"]:checked').value;
       const s1 = parseFloat(document.getElementById('s1').value);
       const s2 = parseFloat(document.getElementById('s2').value);
       const d = parseFloat(document.getElementById('d').value);
-      const angle = parseFloat(document.getElementById('angle').value);
+      const angleDeg = parseFloat(document.getElementById('angle').value);
+      const side = parseFloat(document.getElementById('side').value);
 
       const resultDiv = document.getElementById('result');
 
@@ -112,26 +145,39 @@
         x1 = (1 - s1/s2) / d;
       }
 
-      // Feature x2: parallax angle
-      let x2 = isNaN(angle) ? NaN : angle;
+      // Feature x2: parallax ratio (convert deg -> rad)
+      let x2 = NaN;
+      if (angleDeg > 0 && side > 0) {
+        const angleRad = angleDeg * Math.PI / 180;
+        x2 = angleRad / side;
+      }
 
-      if (!isNaN(x1) || !isNaN(x2)) {
-        // ML formula: y = a0 + a1*x1 + a2*x2
-        const y = a0 + (isNaN(x1) ? 0 : a1 * x1) + (isNaN(x2) ? 0 : a2 * x2);
-
-        if (y > 0) {
-          const Z = 1 / y;
-          resultDiv.innerHTML = `
-            <p>Estimated Distance:</p>
-            <span>${Z.toFixed(2)} m</span>
-          `;
-        } else {
-          resultDiv.innerHTML = `<p style="color:red;">Invalid parameters (y ≤ 0).</p>`;
-        }
+      let y = a0;
+      if (method === "forward" && !isNaN(x1)) {
+        y += a1 * x1;
+      } else if (method === "parallax" && !isNaN(x2)) {
+        y += a2 * x2;
+      } else if (method === "both") {
+        if (!isNaN(x1)) y += a1 * x1;
+        if (!isNaN(x2)) y += a2 * x2;
       } else {
         resultDiv.innerHTML = `<p style="color:red;">Provide valid inputs.</p>`;
+        return;
+      }
+
+      if (y > 0) {
+        const Z = 1 / y;
+        resultDiv.innerHTML = `
+          <p>Estimated Distance:</p>
+          <span>${Z.toFixed(2)} m</span>
+        `;
+      } else {
+        resultDiv.innerHTML = `<p style="color:red;">Invalid parameters (y ≤ 0).</p>`;
       }
     }
+
+    // Initialize view
+    toggleInputs();
   </script>
 </body>
 </html>
