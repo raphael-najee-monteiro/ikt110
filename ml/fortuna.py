@@ -3,7 +3,7 @@ import numpy as np
 import random
 
 # open file
-file_path = "datasets/train.csv"
+file_path = "datasets/training_dataset.csv"
 
 xs = []
 ys = []
@@ -28,7 +28,7 @@ def loss_L2(y_pred, y):
 
 
 # training
-max_iter = 10000
+max_iter = 1000000
 best_loss = np.inf
 best_params = None
 
