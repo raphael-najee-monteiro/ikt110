@@ -13,19 +13,39 @@
       align-items: center;
       min-height: 100vh;
       margin: 0;
+      padding: 1rem;
+    }
+    .container {
+      display: flex;
+      gap: 1rem;
+      width: 100%;
+      max-width: 1200px;
+      flex-wrap: wrap;
     }
     .card {
       background: white;
       padding: 2rem;
       border-radius: 1rem;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 500px;
+      flex: 1;
+      min-width: 400px;
+    }
+    .guide-card {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      max-height: 600px;
+      overflow-y: auto;
     }
     h1 {
       text-align: center;
       font-size: 1.5rem;
       margin-bottom: 1.5rem;
+      color: #1e293b;
+    }
+    h2 {
+      color: #334155;
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
     }
     label {
       font-weight: bold;
@@ -40,6 +60,7 @@
       border: 1px solid #ccc;
       border-radius: 0.5rem;
       font-size: 1rem;
+      box-sizing: border-box;
     }
     .method-select {
       margin-bottom: 1rem;
@@ -56,13 +77,22 @@
       font-size: 1rem;
       font-weight: bold;
       color: white;
-      background: #2563eb;
       border: none;
       border-radius: 0.5rem;
       cursor: pointer;
+      margin-bottom: 0.5rem;
     }
-    button:hover {
+    .calculate-btn {
+      background: #2563eb;
+    }
+    .calculate-btn:hover {
       background: #1e40af;
+    }
+    .guide-btn {
+      background: #059669;
+    }
+    .guide-btn:hover {
+      background: #047857;
     }
     .result {
       text-align: center;
@@ -79,47 +109,140 @@
     .hidden {
       display: none;
     }
+    .guide-section {
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: white;
+      border-radius: 0.5rem;
+      border-left: 4px solid #3b82f6;
+    }
+    .guide-section h3 {
+      color: #1e40af;
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+    }
+    .step {
+      margin-bottom: 0.75rem;
+      padding-left: 1rem;
+    }
+    .step-number {
+      font-weight: bold;
+      color: #059669;
+    }
+    ul {
+      margin: 0.5rem 0;
+      padding-left: 1.5rem;
+    }
+    li {
+      margin-bottom: 0.25rem;
+    }
+    .formula {
+      background: #f1f5f9;
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      font-family: monospace;
+      margin: 0.5rem 0;
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Distance Estimator</h1>
+  <div class="container">
+    <div class="card">
+      <h1>Distance Estimator</h1>
 
-    <div class="method-select">
-      <label><input type="radio" name="method" value="forward" checked onchange="toggleInputs()"> Forward step</label>
-      <label><input type="radio" name="method" value="parallax" onchange="toggleInputs()"> Parallax</label>
-      <label><input type="radio" name="method" value="both" onchange="toggleInputs()"> Combine both</label>
+      <div class="method-select">
+        <label><input type="radio" name="method" value="forward" checked onchange="toggleInputs()"> Forward step</label>
+        <label><input type="radio" name="method" value="parallax" onchange="toggleInputs()"> Parallax</label>
+        <label><input type="radio" name="method" value="both" onchange="toggleInputs()"> Combine both</label>
+      </div>
+
+      <!-- Forward-step method -->
+      <div id="forwardInputs">
+        <label for="s1">initial apparent size [cm]</label>
+        <input type="number" id="s1" placeholder="Enter size">
+
+        <label for="s2">apparent size after step [cm]</label>
+        <input type="number" id="s2" placeholder="Enter size">
+
+        <label for="d">forward step distance [m]</label>
+        <input type="number" id="d" placeholder="Enter distance" value="8">
+      </div>
+
+      <!-- Parallax method -->
+      <div id="parallaxInputs" class="hidden">
+        <label for="angle">parallax angle [degree°]</label>
+        <input type="number" id="angle" placeholder="Enter angle">
+
+        <label for="side">side distance [m]</label>
+        <input type="number" id="side" placeholder="Enter distance" value="8">
+      </div>
+
+      <button class="calculate-btn" onclick="calculateDistance()">Calculate Distance</button>
+      <button class="guide-btn" onclick="toggleGuide()">Show Step-by-Step Guide</button>
+
+      <div class="result" id="result"></div>
     </div>
 
-    <!-- Forward-step method -->
-    <div id="forwardInputs">
-      <label for="s1">initial apparent size [cm]</label>
-      <input type="number" id="s1" placeholder="Enter size">
+    <div class="card guide-card hidden" id="guideCard">
+      <h2>Step-by-Step Guide</h2>
 
-      <label for="s2">apparent size after step [cm]</label>
-      <input type="number" id="s2" placeholder="Enter size">
+      <div class="guide-section">
+        <h3>Setup Required</h3>
+        <ul>
+          <li><strong>Cardboard tube</strong> - for sighting the object</li>
+          <li><strong>Protractor</strong> - for measuring angles</li>
+          <li><strong>8-meter rope</strong> - for measuring distances</li>
+          <li><strong>This app</strong> - for calculations (accessible via QR code)</li>
+        </ul>
+      </div>
 
-      <label for="d">forward step distance [m]</label>
-      <input type="number" id="d" placeholder="Enter distance">
+      <div class="guide-section">
+        <h3>Method 1 - Forward Step</h3>
+        <div class="step">
+          <span class="step-number">Step 1:</span> Sight the target object through the cardboard tube and measure its apparent size.
+        </div>
+        <div class="step">
+          <span class="step-number">Step 2:</span> Walk forward exactly 8 meters toward the object using the 8-meter rope as your guide.
+        </div>
+        <div class="step">
+          <span class="step-number">Step 3:</span> Sight the object through the tube again and measure the new apparent size.
+        </div>
+        <div class="step">
+          <span class="step-number">Step 4:</span> Enter both sizes plus the 8m distance into the app.
+        </div>
+      </div>
+
+      <div class="guide-section">
+        <h3>Method 2 - Parallax</h3>
+        <div class="step">
+          <span class="step-number">Step 1:</span> Sight the target object through the cardboard tube, noting its position.
+        </div>
+        <div class="step">
+          <span class="step-number">Step 2:</span> Move sideways exactly 8 meters (at a 90° angle to your original line of sight) using the rope.
+        </div>
+        <div class="step">
+          <span class="step-number">Step 3:</span> Measure the angular shift of the object using the protractor.
+        </div>
+        <div class="step">
+          <span class="step-number">Step 4:</span> Enter the angle measurement and 8m side distance into the app.
+        </div>
+      </div>
+
+      <div class="guide-section">
+        <h3>Result</h3>
+        <div class="step">
+          The app calculates the actual distance to the object. You can use one method alone or combine both measurements for better accuracy.
+        </div>
+        <div class="formula">
+          Distance = 1 / (a₀ + a₁×forward_ratio + a₂×parallax_ratio)
+          <br>Where coefficients are optimized through machine learning
+        </div>
+      </div>
     </div>
-
-    <!-- Parallax method -->
-    <div id="parallaxInputs" class="hidden">
-      <label for="angle">parallax angle [degree°]</label>
-      <input type="number" id="angle" placeholder="Enter angle">
-
-      <label for="side">side distance [m]</label>
-      <input type="number" id="side" placeholder="Enter distance">
-    </div>
-
-    <button onclick="calculateDistance()">Calculate Distance</button>
-
-    <div class="result" id="result"></div>
   </div>
 
   <script>
     // Fixed ML parameters
-    //0.006158791777281181, 0.4678280082082864, 0.16488740947822755
     const a0 = 0.006158791777281181;
     const a1 = 0.4678280082082864;
     const a2 = 0.16488740947822755;
@@ -128,6 +251,19 @@
       const method = document.querySelector('input[name="method"]:checked').value;
       document.getElementById('forwardInputs').classList.toggle('hidden', method === "parallax");
       document.getElementById('parallaxInputs').classList.toggle('hidden', method === "forward");
+    }
+
+    function toggleGuide() {
+      const guideCard = document.getElementById('guideCard');
+      const button = event.target;
+
+      if (guideCard.classList.contains('hidden')) {
+        guideCard.classList.remove('hidden');
+        button.textContent = 'Hide Step-by-Step Guide';
+      } else {
+        guideCard.classList.add('hidden');
+        button.textContent = 'Show Step-by-Step Guide';
+      }
     }
 
     function calculateDistance() {
