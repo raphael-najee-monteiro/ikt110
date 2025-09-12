@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Distance Estimator</title>
+  <title>Dist-o-Meter</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -28,7 +28,7 @@
       border-radius: 1rem;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       flex: 1;
-      min-width: 400px;
+      min-width: 200px;
     }
     .guide-card {
       background: #f8fafc;
@@ -143,12 +143,20 @@
       font-family: monospace;
       margin: 0.5rem 0;
     }
+    video {
+        margin: 40px 0;
+    }
+    .mae{
+        text-align: center;
+        margin-top: 20px;
+        color: #333;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="card">
-      <h1>Distance Estimator</h1>
+      <h1>Dist-o-Meter</h1>
 
       <div class="method-select">
         <label><input type="radio" name="method" value="forward" checked onchange="toggleInputs()"> Forward step</label>
@@ -181,13 +189,18 @@
       <button class="guide-btn" onclick="toggleGuide()">Show Step-by-Step Guide</button>
 
       <div class="result" id="result"></div>
+        <div class="mae">(Mean Average Error: 0.026565m)</div>
     </div>
 
     <div class="card guide-card hidden" id="guideCard">
       <h2>Step-by-Step Guide</h2>
 
+        <video width="100%" controls>
+            <source src="resources/video_guide.mp4" type="video/mp4">
+        </video>
+
       <div class="guide-section">
-        <h3>Setup Required</h3>
+        <h3>Tools</h3>
         <ul>
           <li><strong>Cardboard tube</strong> - for sighting the object</li>
           <li><strong>Protractor</strong> - for measuring angles</li>
